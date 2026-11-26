@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อเข้าแถว ม.5/8</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Sarabun & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Sarabun', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-sky-50 to-fuchsia-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-indigo-100/80 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+            <button type="button" onclick="switchTab('home')" class="flex items-center gap-3 min-w-0 text-left group">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-200 shrink-0 group-hover:scale-105 transition">
+                    5/8
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 bg-clip-text text-transparent truncate">เช็คชื่อเข้าแถว ม.5/8</h1>
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                        <span id="syncDot" class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                        <span id="syncStatusText" class="truncate">พร้อมใช้งาน</span>
+                    </div>
+                </div>
+            </button>
+
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="btnRefresh" type="button" title="โหลดข้อมูลล่าสุด" class="p-2.5 rounded-xl border border-indigo-100 bg-white/90 text-indigo-600 hover:bg-indigo-50 active:scale-95 transition shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+                <button id="btnSettings" type="button" title="ตั้งค่าการเชื่อมต่อ" class="p-2.5 rounded-xl border border-indigo-100 bg-white/90 text-purple-600 hover:bg-purple-50 active:scale-95 transition shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-3">
+            <nav class="grid grid-cols-4 gap-1.5 bg-indigo-100/70 p-1 rounded-2xl">
+                <button data-tab="home" class="tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm">
+                    สารบัญ
+                </button>
+                <button data-tab="checkin" class="tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 hover:text-indigo-700">
+                    เช็คเข้าแถว
+                </button>
+                <button data-tab="daily" class="tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 hover:text-indigo-700">
+                    สถิติวันนี้
+                </button>
+                <button data-tab="monthly" class="tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 hover:text-indigo-700">
+                    สถิติทั้งหมด
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 flex-1 pb-24 sm:pb-10">
+
+        <!-- ==================== TAB 0: HOME / DIRECTORY ==================== -->
+        <section id="tab-home" class="space-y-6">
+            <!-- Vibrant Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-6 sm:p-8 text-white shadow-xl shadow-indigo-200/70">
+                <div class="absolute -top-10 -right-10 w-44 h-44 bg-white/15 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-10 w-40 h-40 bg-sky-300/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-xs text-xs sm:text-sm font-semibold mb-2">
+                            ระบบบันทึกการเข้าแถวออนไลน์
+                        </span>
+                        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">ชั้นมัธยมศึกษาปีที่ 5/8</h2>
+                        <p id="homeThaiDate" class="text-indigo-100 text-sm sm:text-base font-medium mt-1">-</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white/15 backdrop-blur-xs rounded-2xl px-4 py-3 border border-white/20 shrink-0">
+                        <div class="text-center px-2">
+                            <div class="text-xs text-indigo-100">นักเรียนทั้งหมด</div>
+                            <div class="text-2xl font-bold">40</div>
+                        </div>
+                        <div class="w-px h-9 bg-white/25"></div>
+                        <div class="text-center px-2">
+                            <div class="text-xs text-indigo-100">เช็คชื่อวันนี้</div>
+                            <div id="homeHeroChecked" class="text-2xl font-bold">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Directory Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Card 1: เช็คเข้าแถว -->
+                <button type="button" onclick="switchTab('checkin')" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 p-6 text-left text-white shadow-lg shadow-emerald-200/70 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-200">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/15 rounded-full group-hover:scale-125 transition-transform duration-300"></div>
+                    <div class="relative flex flex-col h-full justify-between gap-6">
+                        <div class="flex items-center justify-between">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shadow-inner">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                </svg>
+                            </div>
+                            <span id="homeCheckinBadge" class="px-3 py-1 rounded-full bg-white/20 text-xs font-bold">รอเช็ค 40 คน</span>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">เช็คเข้าแถว</h3>
+                            <p class="text-emerald-50 text-sm mt-1">บันทึกสถานะ มา สาย ลา ขาด ประจำวัน</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-white/20 text-sm font-semibold">
+                            <span>เข้าสู่หน้าเช็คชื่อ</span>
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Card 2: สถิติวันนี้ -->
+                <button type="button" onclick="openTodayStats()" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 text-left text-white shadow-lg shadow-purple-200/70 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-200">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/15 rounded-full group-hover:scale-125 transition-transform duration-300"></div>
+                    <div class="relative flex flex-col h-full justify-between gap-6">
+                        <div class="flex items-center justify-between">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shadow-inner">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+                                </svg>
+                            </div>
+                            <span id="homeTodayRateBadge" class="px-3 py-1 rounded-full bg-white/20 text-xs font-bold">มา 0 คน</span>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">สถิติวันนี้</h3>
+                            <div class="grid grid-cols-4 gap-1.5 mt-2.5 text-center">
+                                <div class="bg-white/15 rounded-xl py-1">
+                                    <div class="text-[11px] text-purple-100">มา</div>
+                                    <div id="homeTodayPresent" class="font-bold text-sm">0</div>
+                                </div>
+                                <div class="bg-white/15 rounded-xl py-1">
+                                    <div class="text-[11px] text-purple-100">สาย</div>
+                                    <div id="homeTodayLate" class="font-bold text-sm">0</div>
+                                </div>
+                                <div class="bg-white/15 rounded-xl py-1">
+                                    <div class="text-[11px] text-purple-100">ลา</div>
+                                    <div id="homeTodayLeave" class="font-bold text-sm">0</div>
+                                </div>
+                                <div class="bg-white/15 rounded-xl py-1">
+                                    <div class="text-[11px] text-purple-100">ขาด</div>
+                                    <div id="homeTodayAbsent" class="font-bold text-sm">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-white/20 text-sm font-semibold">
+                            <span>ดูยอดและรายชื่อวันนี้</span>
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Card 3: สถิติทั้งหมด -->
+                <button type="button" onclick="switchTab('monthly')" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-6 text-left text-white shadow-lg shadow-orange-200/70 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all duration-200">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/15 rounded-full group-hover:scale-125 transition-transform duration-300"></div>
+                    <div class="relative flex flex-col h-full justify-between gap-6">
+                        <div class="flex items-center justify-between">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shadow-inner">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                            </div>
+                            <span id="homeAllDaysBadge" class="px-3 py-1 rounded-full bg-white/20 text-xs font-bold">0 วัน</span>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">สถิติทั้งหมด</h3>
+                            <p id="homeAllSummaryText" class="text-orange-50 text-sm mt-1">สรุปรายเดือน รายบุคคล และส่งออก Word</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-white/20 text-sm font-semibold">
+                            <span>ดูสถิติทั้งหมด</span>
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 1: DAILY CHECK-IN ==================== -->
+        <section id="tab-checkin" class="hidden space-y-4">
+            <!-- Date & Controls Card -->
+            <div class="bg-white/95 backdrop-blur-xs rounded-3xl border border-indigo-100 p-4 sm:p-5 shadow-md shadow-indigo-100/50 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <!-- Date Navigation -->
+                    <div class="flex items-center gap-2">
+                        <button id="btnPrevDay" type="button" title="วันก่อนหน้า" class="p-2.5 rounded-xl border border-indigo-100 bg-white hover:bg-indigo-50 text-indigo-600 active:scale-95 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <input id="checkinDate" type="date" class="flex-1 md:flex-initial px-3.5 py-2 rounded-xl border border-indigo-200 text-sm sm:text-base font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button id="btnNextDay" type="button" title="วันถัดไป" class="p-2.5 rounded-xl border border-indigo-100 bg-white hover:bg-indigo-50 text-indigo-600 active:scale-95 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <button id="btnToday" type="button" class="px-3.5 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-bold transition active:scale-95">
+                            วันนี้
+                        </button>
+                    </div>
+
+                    <!-- Thai Formatted Date Display -->
+                    <div id="checkinThaiDate" class="text-sm sm:text-base font-bold text-indigo-700 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 px-4 py-2 rounded-xl text-center md:text-right">
+                        -
+                    </div>
+                </div>
+
+                <!-- Quick Summary Strip -->
+                <div class="grid grid-cols-5 gap-2 text-center">
+                    <div class="bg-gradient-to-b from-emerald-50 to-emerald-100/70 border border-emerald-200 rounded-2xl py-2 px-1">
+                        <div class="text-xs text-emerald-700 font-bold">มา</div>
+                        <div id="countPresent" class="text-lg sm:text-xl font-extrabold text-emerald-700">0</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-amber-50 to-amber-100/70 border border-amber-200 rounded-2xl py-2 px-1">
+                        <div class="text-xs text-amber-700 font-bold">สาย</div>
+                        <div id="countLate" class="text-lg sm:text-xl font-extrabold text-amber-700">0</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-sky-50 to-sky-100/70 border border-sky-200 rounded-2xl py-2 px-1">
+                        <div class="text-xs text-sky-700 font-bold">ลา</div>
+                        <div id="countLeave" class="text-lg sm:text-xl font-extrabold text-sky-700">0</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-rose-50 to-rose-100/70 border border-rose-200 rounded-2xl py-2 px-1">
+                        <div class="text-xs text-rose-700 font-bold">ขาด</div>
+                        <div id="countAbsent" class="text-lg sm:text-xl font-extrabold text-rose-700">0</div>
+                    </div>
+                    <div class="bg-gradient-to-b from-slate-50 to-slate-100 border border-slate-200 rounded-2xl py-2 px-1">
+                        <div class="text-xs text-slate-600 font-bold">รอเช็ค</div>
+                        <div id="countUnchecked" class="text-lg sm:text-xl font-extrabold text-slate-700">40</div>
+                    </div>
+                </div>
+
+                <!-- Search & Bulk Actions -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+                    <div class="relative flex-1">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input id="checkinSearch" type="text" placeholder="ค้นหาเลขที่, รหัส, ชื่อ-สกุล..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-indigo-100 bg-slate-50/70 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btnMarkAllPresent" type="button" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold shadow-sm transition active:scale-95">
+                            มาทั้งหมด
+                        </button>
+                        <button id="btnClearDay" type="button" class="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-sm font-semibold transition active:scale-95">
+                            ล้างค่า
+                        </button>
+                        <button id="btnSaveDesktop" type="button" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-bold shadow-md shadow-indigo-200 transition active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            บันทึกข้อมูล
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Check-in List -->
+            <div id="studentCheckinList" class="space-y-2">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: DAILY STATISTICS ==================== -->
+        <section id="tab-daily" class="hidden space-y-4">
+            <div class="bg-white/95 backdrop-blur-xs rounded-3xl border border-purple-100 p-4 shadow-md shadow-purple-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <input id="dailyStatDate" type="date" class="px-3.5 py-2 rounded-xl border border-purple-200 text-sm sm:text-base font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <span id="dailyStatThaiDate" class="text-sm sm:text-base font-bold text-purple-700"></span>
+                </div>
+                <button id="btnExportDailyWord" type="button" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-bold shadow-md shadow-indigo-200 transition active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    ส่งออก Word (รายวัน)
+                </button>
+            </div>
+
+            <!-- Daily KPI Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 p-4 text-white shadow-md shadow-emerald-200/70">
+                    <div class="text-sm text-emerald-50 font-semibold">มาเข้าแถว</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span id="dailyKpiPresent" class="text-3xl font-extrabold">0</span>
+                        <span id="dailyPctPresent" class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">0%</span>
+                    </div>
+                </div>
+                <div class="rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-4 text-white shadow-md shadow-amber-200/70">
+                    <div class="text-sm text-amber-50 font-semibold">มาสาย</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span id="dailyKpiLate" class="text-3xl font-extrabold">0</span>
+                        <span id="dailyPctLate" class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">0%</span>
+                    </div>
+                </div>
+                <div class="rounded-3xl bg-gradient-to-br from-sky-500 to-blue-600 p-4 text-white shadow-md shadow-sky-200/70">
+                    <div class="text-sm text-sky-50 font-semibold">ลา</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span id="dailyKpiLeave" class="text-3xl font-extrabold">0</span>
+                        <span id="dailyPctLeave" class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">0%</span>
+                    </div>
+                </div>
+                <div class="rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 p-4 text-white shadow-md shadow-rose-200/70">
+                    <div class="text-sm text-rose-50 font-semibold">ขาด</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span id="dailyKpiAbsent" class="text-3xl font-extrabold">0</span>
+                        <span id="dailyPctAbsent" class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Ratio Bar -->
+            <div class="bg-white/95 rounded-3xl border border-indigo-100 p-4 shadow-sm space-y-2">
+                <div class="flex justify-between text-xs font-bold text-slate-600">
+                    <span>สัดส่วนการเข้าแถวประจำวัน</span>
+                    <span id="dailyCheckedTotal" class="text-indigo-700">เช็คแล้ว 0 / 40 คน</span>
+                </div>
+                <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                    <div id="barPresent" class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="barLate" class="bg-gradient-to-r from-amber-400 to-orange-400 h-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="barLeave" class="bg-gradient-to-r from-sky-400 to-blue-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="barAbsent" class="bg-gradient-to-r from-rose-400 to-pink-500 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Grouped Student Lists by Status -->
+            <div id="dailyGroupedLists" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Daily Detail Table -->
+            <div class="bg-white/95 rounded-3xl border border-indigo-100 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-indigo-50 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="font-bold text-slate-800">ตารางรายชื่อทั้งหมดประจำวัน</h2>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button data-daily-filter="all" class="daily-filter-btn px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white">ทั้งหมด</button>
+                        <button data-daily-filter="มา" class="daily-filter-btn px-3 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700">มา</button>
+                        <button data-daily-filter="สาย" class="daily-filter-btn px-3 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700">สาย</button>
+                        <button data-daily-filter="ลา" class="daily-filter-btn px-3 py-1 rounded-lg text-xs font-bold bg-sky-50 text-sky-700">ลา</button>
+                        <button data-daily-filter="ขาด" class="daily-filter-btn px-3 py-1 rounded-lg text-xs font-bold bg-rose-50 text-rose-700">ขาด</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-xs sm:text-sm border-b border-slate-200">
+                                <th class="py-3 px-3 sm:px-4 font-semibold text-center w-14">เลขที่</th>
+                                <th class="py-3 px-3 sm:px-4 font-semibold w-24">รหัส</th>
+                                <th class="py-3 px-3 sm:px-4 font-semibold">ชื่อ-สกุล</th>
+                                <th class="py-3 px-3 sm:px-4 font-semibold text-center w-24">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyStatTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: MONTHLY / ALL STATISTICS ==================== -->
+        <section id="tab-monthly" class="hidden space-y-4">
+            <div class="bg-white/95 backdrop-blur-xs rounded-3xl border border-orange-100 p-4 shadow-md shadow-orange-100/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="monthlySelectMonth" class="px-3.5 py-2 rounded-xl border border-orange-200 text-sm sm:text-base font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <!-- Months populated by JS -->
+                    </select>
+                    <select id="monthlySelectYear" class="px-3.5 py-2 rounded-xl border border-orange-200 text-sm sm:text-base font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <!-- Years populated by JS -->
+                    </select>
+                </div>
+                <button id="btnExportMonthlyWord" type="button" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white text-sm font-bold shadow-md shadow-orange-200 transition active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    ส่งออก Word (สถิติ)
+                </button>
+            </div>
+
+            <!-- Monthly Summary KPIs -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="bg-white/95 rounded-2xl border border-indigo-100 p-3.5 shadow-sm">
+                    <div class="text-xs text-slate-500 font-semibold">จำนวนวันที่เช็ค</div>
+                    <div id="monthTotalDays" class="text-2xl font-extrabold text-indigo-700 mt-1">0 วัน</div>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-2xl p-3.5 shadow-md shadow-indigo-200">
+                    <div class="text-xs text-indigo-100 font-semibold">เฉลี่ยมาเข้าแถว</div>
+                    <div id="monthAvgRate" class="text-2xl font-extrabold mt-1">0%</div>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100/80 rounded-2xl border border-emerald-200 p-3.5">
+                    <div class="text-xs text-emerald-700 font-bold">รวม มา</div>
+                    <div id="monthTotalPresent" class="text-2xl font-extrabold text-emerald-700 mt-1">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100/80 rounded-2xl border border-amber-200 p-3.5">
+                    <div class="text-xs text-amber-700 font-bold">รวม สาย</div>
+                    <div id="monthTotalLate" class="text-2xl font-extrabold text-amber-700 mt-1">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-sky-50 to-sky-100/80 rounded-2xl border border-sky-200 p-3.5">
+                    <div class="text-xs text-sky-700 font-bold">รวม ลา</div>
+                    <div id="monthTotalLeave" class="text-2xl font-extrabold text-sky-700 mt-1">0</div>
+                </div>
+                <div class="bg-gradient-to-br from-rose-50 to-rose-100/80 rounded-2xl border border-rose-200 p-3.5">
+                    <div class="text-xs text-rose-700 font-bold">รวม ขาด</div>
+                    <div id="monthTotalAbsent" class="text-2xl font-extrabold text-rose-700 mt-1">0</div>
+                </div>
+            </div>
+
+            <!-- Monthly Student Table -->
+            <div class="bg-white/95 rounded-3xl border border-orange-100 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-orange-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h2 id="monthlyTableTitle" class="font-bold text-slate-800">สรุปรายบุคคลประจำเดือน</h2>
+                    <input id="monthlySearch" type="text" placeholder="ค้นหานักเรียน..." class="w-full sm:w-64 px-3.5 py-2 rounded-xl border border-orange-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-xs sm:text-sm border-b border-slate-200">
+                                <th class="py-3 px-2.5 sm:px-4 font-semibold text-center w-12">เลขที่</th>
+                                <th class="py-3 px-2.5 sm:px-4 font-semibold hidden sm:table-cell w-24">รหัส</th>
+                                <th class="py-3 px-2.5 sm:px-4 font-semibold">ชื่อ-สกุล</th>
+                                <th class="py-3 px-2 font-semibold text-center text-emerald-700 w-14">มา</th>
+                                <th class="py-3 px-2 font-semibold text-center text-amber-700 w-14">สาย</th>
+                                <th class="py-3 px-2 font-semibold text-center text-sky-700 w-14">ลา</th>
+                                <th class="py-3 px-2 font-semibold text-center text-rose-700 w-14">ขาด</th>
+                                <th class="py-3 px-2.5 sm:px-4 font-semibold text-center w-20">ร้อยละ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyStatTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Mobile Sticky Save Bar -->
+    <div id="mobileSaveBar" class="hidden sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-indigo-100 p-3 shadow-lg">
+        <button id="btnSaveMobile" type="button" class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-base shadow-md flex items-center justify-center gap-2 active:scale-95 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            บันทึกการเช็คชื่อ
+        </button>
+    </div>
+
+    <!-- Settings Modal (Minimal, No Instructions) -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-slate-900">เชื่อมต่อ Google Sheet</h3>
+                <button id="btnCloseSettings" type="button" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Google Sheet ID</label>
+                    <input id="inputSheetId" type="text" readonly class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-mono text-slate-600">
+                </div>
+                <div>
+                    <label for="inputGasUrl" class="block text-xs font-semibold text-slate-600 mb-1">Web App URL (Apps Script)</label>
+                    <input id="inputGasUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button id="btnCopyGasCode" type="button" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                    คัดลอกโค้ด Apps Script
+                </button>
+                <button id="btnSaveSettings" type="button" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition">
+                    บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-20 right-4 z-50 transform translate-x-full opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toastInner" class="px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white bg-slate-800 flex items-center gap-2">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * =====================================================================
+         * CONFIGURATION & STUDENT DATA (ชั้น ม.5/8)
+         * =====================================================================
+         */
+        const SHEET_ID = '1xrVmojWI4cpiMmt3Q7-ka73Pr0d3M7KMclHe8clkzG4';
+        const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxI8oTY4fqKtvHo5cGlQKlG0m1GWLZrk1TG1UBzEgYK4AyWH56-2MOWALur0qGyPloF/exec';
+        const STORAGE_KEY_DATA = 'm5_8_attendance_data_v1';
+        const STORAGE_KEY_GAS_URL = 'm5_8_gas_url_v1';
+
+        const STUDENTS = [
+            { no: 1,  id: '30144', prefix: 'น.ส.', first: 'ศศิประภา',   last: 'ยืนยงแสน' },
+            { no: 2,  id: '30200', prefix: 'น.ส.', first: 'บุญญาพร',    last: 'เกทุมะ' },
+            { no: 3,  id: '30292', prefix: 'นาย',  first: 'รัตนโชติ',    last: 'แสงบุญ' },
+            { no: 4,  id: '30293', prefix: 'นาย',  first: 'วีราวัฒน์',    last: 'แสงจูง' },
+            { no: 5,  id: '30380', prefix: 'น.ส.', first: 'โสภาพิชญ์',   last: 'มูลคำ' },
+            { no: 6,  id: '30406', prefix: 'น.ส.', first: 'ทิพวรรณ',    last: 'สถา' },
+            { no: 7,  id: '30441', prefix: 'น.ส.', first: 'ณัชชา',      last: 'อินทจักร์' },
+            { no: 8,  id: '30444', prefix: 'น.ส.', first: 'บุลจิรา',     last: 'เรืองอ่อน' },
+            { no: 9,  id: '30471', prefix: 'น.ส.', first: 'กัญญาพัชร',  last: 'ใหม่น้อย' },
+            { no: 10, id: '30713', prefix: 'น.ส.', first: 'มะลิวัลย์',    last: 'ศรีวงค์' },
+            { no: 11, id: '31923', prefix: 'น.ส.', first: 'เชษฐ์ธิดา',   last: 'ทาระใจ' },
+            { no: 12, id: '31962', prefix: 'น.ส.', first: 'พรรัมภา',    last: 'กันทะวงค์' },
+            { no: 13, id: '32441', prefix: 'น.ส.', first: 'ขวัญชนก',    last: 'ชัน' },
+            { no: 14, id: '32463', prefix: 'น.ส.', first: 'พิชญ์สินี',    last: 'ปัญบือ' },
+            { no: 15, id: '32508', prefix: 'น.ส.', first: 'เกตุวดี',     last: 'เยอเสาะ' },
+            { no: 16, id: '32509', prefix: 'น.ส.', first: 'ชดารัตน์',    last: 'แก้วรินทร์' },
+            { no: 17, id: '32510', prefix: 'น.ส.', first: 'ณภัทรชา',    last: 'อาซัง' },
+            { no: 18, id: '32511', prefix: 'น.ส.', first: 'ณัฏฐณิชา',   last: 'ปัญญาธิ' },
+            { no: 19, id: '32512', prefix: 'น.ส.', first: 'ณัฐณิชา',    last: 'สีหนองดุม' },
+            { no: 20, id: '32513', prefix: 'น.ส.', first: 'ธัญญรัตน์',   last: 'ปิ่นทอง' },
+            { no: 21, id: '32515', prefix: 'น.ส.', first: 'ธิดาพร',     last: 'คงตุ่น' },
+            { no: 22, id: '32516', prefix: 'น.ส.', first: 'ธิตยา',      last: 'ร่มโพธิ์' },
+            { no: 23, id: '32517', prefix: 'น.ส.', first: 'ธีรดา',      last: 'มาเยอะ' },
+            { no: 24, id: '32518', prefix: 'น.ส.', first: 'นาทอ',       last: 'ลาหู่นะ' },
+            { no: 25, id: '32519', prefix: 'น.ส.', first: 'นุชจรี',     last: 'รัสมี' },
+            { no: 26, id: '32520', prefix: 'น.ส.', first: 'บัญฑิตา',    last: 'นามแสง' },
+            { no: 27, id: '32521', prefix: 'น.ส.', first: 'พรทิพย์',    last: 'อุคำ' },
+            { no: 28, id: '32522', prefix: 'น.ส.', first: 'พิมจันทร์',   last: 'เชหมื่อ' },
+            { no: 29, id: '32526', prefix: 'น.ส.', first: 'วิภาวนี',     last: 'มาเยอ' },
+            { no: 30, id: '32528', prefix: 'น.ส.', first: 'สุภาภรณ์',   last: 'เชอหมื่อ' },
+            { no: 31, id: '32529', prefix: 'น.ส.', first: 'อนุสรา',     last: 'คำสุข' },
+            { no: 32, id: '32530', prefix: 'น.ส.', first: 'อภิญญา',     last: 'อุษามณีโชค' },
+            { no: 33, id: '32531', prefix: 'น.ส.', first: 'อภิชญานันท์', last: 'ซาวคำเขตต์' },
+            { no: 34, id: '32532', prefix: 'น.ส.', first: 'อุษา',       last: 'สาธรรม' },
+            { no: 35, id: '32579', prefix: 'น.ส.', first: 'ฟ้านำพร',    last: 'อาจอ' },
+            { no: 36, id: '32601', prefix: 'นาย',  first: 'ศุภนัย',     last: 'คิดชอบ' },
+            { no: 37, id: '32603', prefix: 'น.ส.', first: 'สุภัสสร',    last: 'แก้วยงค์' },
+            { no: 38, id: '32611', prefix: 'น.ส.', first: 'เสาวนีย์',    last: 'เว่ยยื่อ' },
+            { no: 39, id: '33288', prefix: 'นาย',  first: 'อนาคิน',     last: 'บุญยอด' },
+            { no: 40, id: '29782', prefix: 'น.ส.', first: 'ธิตภัทร',    last: 'ฟองจันคำ' }
+        ];
+
+        const THAI_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+        const THAI_MONTHS = [
+            'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+            'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        ];
+
+        const STATUSES = ['มา', 'สาย', 'ลา', 'ขาด'];
+
+        /**
+         * =====================================================================
+         * APPLICATION STATE
+         * =====================================================================
+         */
+        let state = {
+            activeTab: 'home',
+            selectedDate: getTodayISO(),
+            dailyFilter: 'all',
+            checkinSearch: '',
+            monthlySearch: '',
+            selectedMonth: 0, // 0 = ทั้งหมดทุกเดือน, 1-12 = รายเดือน
+            selectedYear: new Date().getFullYear(),
+            // Structure: { "YYYY-MM-DD": { "30144": "มา", ... } }
+            attendanceData: {},
+            gasUrl: localStorage.getItem(STORAGE_KEY_GAS_URL) || DEFAULT_GAS_URL,
+            isSyncing: false
+        };
+
+        /**
+         * =====================================================================
+         * UTILITY FUNCTIONS (DATE, FORMAT, TOAST)
+         * =====================================================================
+         */
+        function getTodayISO() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function formatThaiDate(isoDate) {
+            if (!isoDate) return '-';
+            const [y, m, d] = isoDate.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            const dayName = THAI_DAYS[dt.getDay()];
+            const monthName = THAI_MONTHS[m - 1];
+            const beYear = y + 543;
+            return `วัน${dayName}ที่ ${d} ${monthName} ${beYear}`;
+        }
+
+        function shiftDate(isoDate, deltaDays) {
+            const [y, m, d] = isoDate.split('-').map(Number);
+            const dt = new Date(y, m - 1, d + deltaDays);
+            const ny = dt.getFullYear();
+            const nm = String(dt.getMonth() + 1).padStart(2, '0');
+            const nd = String(dt.getDate()).padStart(2, '0');
+            return `${ny}-${nm}-${nd}`;
+        }
+
+        function getFullName(student) {
+            return `${student.prefix}${student.first} ${student.last}`;
+        }
+
+        let toastTimer = null;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const inner = document.getElementById('toastInner');
+            const msg = document.getElementById('toastMessage');
+
+            msg.textContent = message;
+            inner.className = 'px-4 py-3 rounded-xl shadow-lg text-sm font-semibold text-white flex items-center gap-2 ' + (
+                type === 'success' ? 'bg-emerald-600' :
+                type === 'error'   ? 'bg-rose-600' :
+                type === 'warning' ? 'bg-amber-600' : 'bg-slate-800'
+            );
+
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 2800);
+        }
+
+        function setSyncStatus(text, colorClass) {
+            const dot = document.getElementById('syncDot');
+            const label = document.getElementById('syncStatusText');
+            dot.className = `w-2 h-2 rounded-full inline-block ${colorClass}`;
+            label.textContent = text;
+        }
+
+        /**
+         * =====================================================================
+         * DATA SYNC LAYER (Google Apps Script / Google Sheet / LocalStorage)
+         * =====================================================================
+         */
+        function loadLocalCache() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_DATA);
+                if (raw) {
+                    state.attendanceData = JSON.parse(raw) || {};
+                }
+            } catch (err) {
+                console.error('Local cache read error:', err);
+            }
+        }
+
+        function saveLocalCache() {
+            try {
+                localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(state.attendanceData));
+            } catch (err) {
+                console.error('Local cache write error:', err);
+            }
+        }
+
+        function isInsideGoogleAppsScript() {
+            return typeof google !== 'undefined' && google.script && google.script.run;
+        }
+
+        async function fetchAllDataFromCloud() {
+            setSyncStatus('กำลังดึงข้อมูล...', 'bg-amber-400 animate-pulse');
+            try {
+                // Mode 1: Deployed directly via Google Apps Script HtmlService
+                if (isInsideGoogleAppsScript()) {
+                    await new Promise((resolve, reject) => {
+                        google.script.run
+                            .withSuccessHandler((res) => {
+                                if (res && typeof res === 'object') {
+                                    state.attendanceData = res;
+                                    saveLocalCache();
+                                }
+                                resolve();
+                            })
+                            .withFailureHandler(reject)
+                            .getAttendanceData();
+                    });
+                    setSyncStatus('เชื่อมต่อ Google Sheet แล้ว', 'bg-emerald-500');
+                    renderAll();
+                    return;
+                }
+
+                // Mode 2: External Web App URL (Google Apps Script)
+                if (state.gasUrl) {
+                    const response = await fetch(`${state.gasUrl}?action=getAll&sheetId=${encodeURIComponent(SHEET_ID)}&t=${Date.now()}`);
+                    if (!response.ok) throw new Error('Network error');
+                    const json = await response.json();
+                    if (json && json.data) {
+                        state.attendanceData = json.data;
+                        saveLocalCache();
+                        setSyncStatus('เชื่อมต่อ Google Sheet แล้ว', 'bg-emerald-500');
+                        renderAll();
+                        return;
+                    }
+                }
+
+                // Mode 3: Direct Public Read from Google Sheet Visualization API (if sheet is public)
+                const gvizUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+                const res = await fetch(gvizUrl);
+                if (res.ok) {
+                    const text = await res.text();
+                    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
+                    if (match && match[1]) {
+                        const parsed = JSON.parse(match[1]);
+                        const rows = parsed.table?.rows || [];
+                        const cloudData = {};
+                        rows.forEach((r) => {
+                            const c0 = r.c?.[0]?.f || r.c?.[0]?.v; // Date YYYY-MM-DD
+                            const c1 = r.c?.[1]?.v; // Student ID
+                            const c2 = r.c?.[2]?.v; // Status
+                            if (c0 && c1 && STATUSES.includes(String(c2).trim())) {
+                                const dateKey = normalizeDateKey(String(c0));
+                                if (dateKey) {
+                                    if (!cloudData[dateKey]) cloudData[dateKey] = {};
+                                    cloudData[dateKey][String(c1).trim()] = String(c2).trim();
+                                }
+                            }
+                        });
+                        if (Object.keys(cloudData).length > 0) {
+                            state.attendanceData = { ...state.attendanceData, ...cloudData };
+                            saveLocalCache();
+                            setSyncStatus('ซิงค์จาก Google Sheet แล้ว', 'bg-emerald-500');
+                            renderAll();
+                            return;
+                        }
+                    }
+                }
+                setSyncStatus('บันทึกในเครื่อง', 'bg-sky-500');
+            } catch (err) {
+                console.warn('Cloud fetch fallback:', err);
+                setSyncStatus('บันทึกในเครื่อง', 'bg-sky-500');
+            }
+            renderAll();
+        }
+
+        function normalizeDateKey(str) {
+            const clean = str.trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+            const d = new Date(clean);
+            if (!isNaN(d.getTime())) {
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            return null;
+        }
+
+        async function saveDayToCloud(dateKey) {
+            const dayRecords = state.attendanceData[dateKey] || {};
+            saveLocalCache();
+            setSyncStatus('กำลังบันทึก...', 'bg-amber-400 animate-pulse');
+
+            try {
+                // Mode 1: Deployed inside Apps Script
+                if (isInsideGoogleAppsScript()) {
+                    await new Promise((resolve, reject) => {
+                        google.script.run
+                            .withSuccessHandler(resolve)
+                            .withFailureHandler(reject)
+                            .saveAttendanceDay(dateKey, dayRecords);
+                    });
+                    setSyncStatus('บันทึกลง Google Sheet แล้ว', 'bg-emerald-500');
+                    showToast('บันทึกข้อมูลลง Google Sheet สำเร็จ');
+                    return;
+                }
+
+                // Mode 2: Connected via Apps Script Web App URL
+                if (state.gasUrl) {
+                    const payload = {
+                        action: 'saveDay',
+                        sheetId: SHEET_ID,
+                        date: dateKey,
+                        records: dayRecords
+                    };
+                    const response = await fetch(state.gasUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('Save failed');
+                    setSyncStatus('บันทึกลง Google Sheet แล้ว', 'bg-emerald-500');
+                    showToast('บันทึกข้อมูลลง Google Sheet สำเร็จ');
+                    return;
+                }
+
+                // Mode 3: Local save
+                setSyncStatus('บันทึกในเครื่องแล้ว', 'bg-sky-500');
+                showToast('บันทึกข้อมูลเรียบร้อย');
+            } catch (err) {
+                console.error('Save error:', err);
+                setSyncStatus('บันทึกในเครื่อง (ออฟไลน์)', 'bg-amber-500');
+                showToast('บันทึกในเครื่องแล้ว (ไม่สามารถซิงค์ได้)', 'warning');
+            }
+        }
+
+        /**
+         * =====================================================================
+         * RENDER FUNCTIONS
+         * =====================================================================
+         */
+        function renderAll() {
+            renderHomeView();
+            renderCheckinView();
+            renderDailyStatsView();
+            renderMonthlyStatsView();
+        }
+
+        function renderHomeView() {
+            const todayKey = getTodayISO();
+            const todayRecords = state.attendanceData[todayKey] || {};
+            let present = 0, late = 0, leave = 0, absent = 0;
+
+            STUDENTS.forEach(s => {
+                const st = todayRecords[s.id];
+                if (st === 'มา') present++;
+                else if (st === 'สาย') late++;
+                else if (st === 'ลา') leave++;
+                else if (st === 'ขาด') absent++;
+            });
+
+            const checked = present + late + leave + absent;
+            const remaining = STUDENTS.length - checked;
+
+            document.getElementById('homeThaiDate').textContent = formatThaiDate(todayKey);
+            document.getElementById('homeHeroChecked').textContent = `${checked}/${STUDENTS.length}`;
+            document.getElementById('homeCheckinBadge').textContent = remaining === 0 ? 'เช็คครบแล้ว' : `รอเช็ค ${remaining} คน`;
+
+            document.getElementById('homeTodayRateBadge').textContent = `มา ${present} คน`;
+            document.getElementById('homeTodayPresent').textContent = present;
+            document.getElementById('homeTodayLate').textContent = late;
+            document.getElementById('homeTodayLeave').textContent = leave;
+            document.getElementById('homeTodayAbsent').textContent = absent;
+
+            const allStats = getMonthlyStatsData(state.selectedYear, 0);
+            document.getElementById('homeAllDaysBadge').textContent = `บันทึกแล้ว ${allStats.matchingDates.length} วัน`;
+            document.getElementById('homeAllSummaryText').textContent = allStats.matchingDates.length > 0
+                ? `เฉลี่ยการเข้าแถว ${allStats.avgRate.toFixed(1)}% • ส่งออก Word`
+                : `สรุปรายเดือน รายบุคคล และส่งออก Word`;
+        }
+
+        function openTodayStats() {
+            state.selectedDate = getTodayISO();
+            switchTab('daily');
+        }
+
+        function setStudentStatus(studentId, status) {
+            const dateKey = state.selectedDate;
+            if (!state.attendanceData[dateKey]) {
+                state.attendanceData[dateKey] = {};
+            }
+            if (state.attendanceData[dateKey][studentId] === status) {
+                delete state.attendanceData[dateKey][studentId];
+            } else {
+                state.attendanceData[dateKey][studentId] = status;
+            }
+            saveLocalCache();
+            renderHomeView();
+            renderCheckinView();
+        }
+
+        function renderCheckinView() {
+            const dateKey = state.selectedDate;
+            const dayRecords = state.attendanceData[dateKey] || {};
+
+            document.getElementById('checkinDate').value = dateKey;
+            document.getElementById('checkinThaiDate').textContent = formatThaiDate(dateKey);
+
+            // Calculate counts
+            let present = 0, late = 0, leave = 0, absent = 0;
+            STUDENTS.forEach(s => {
+                const st = dayRecords[s.id];
+                if (st === 'มา') present++;
+                else if (st === 'สาย') late++;
+                else if (st === 'ลา') leave++;
+                else if (st === 'ขาด') absent++;
+            });
+            const unchecked = STUDENTS.length - (present + late + leave + absent);
+
+            document.getElementById('countPresent').textContent = present;
+            document.getElementById('countLate').textContent = late;
+            document.getElementById('countLeave').textContent = leave;
+            document.getElementById('countAbsent').textContent = absent;
+            document.getElementById('countUnchecked').textContent = unchecked;
+
+            // Filter students
+            const q = state.checkinSearch.trim().toLowerCase();
+            const filtered = STUDENTS.filter(s => {
+                if (!q) return true;
+                return String(s.no).includes(q) ||
+                       s.id.includes(q) ||
+                       getFullName(s).toLowerCase().includes(q);
+            });
+
+            const container = document.getElementById('studentCheckinList');
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">ไม่พบรายชื่อนักเรียน</div>`;
+                return;
+            }
+
+            const statusStyles = {
+                'มา':  { active: 'bg-emerald-600 text-white border-emerald-600 shadow-sm', idle: 'bg-white text-slate-600 border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200' },
+                'สาย': { active: 'bg-amber-500 text-white border-amber-500 shadow-sm',     idle: 'bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200' },
+                'ลา':  { active: 'bg-sky-600 text-white border-sky-600 shadow-sm',         idle: 'bg-white text-slate-600 border-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200' },
+                'ขาด': { active: 'bg-rose-600 text-white border-rose-600 shadow-sm',       idle: 'bg-white text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200' }
+            };
+
+            container.innerHTML = filtered.map(student => {
+                const currentStatus = dayRecords[student.id] || '';
+                const buttonsHtml = STATUSES.map(st => {
+                    const isActive = currentStatus === st;
+                    const cls = isActive ? statusStyles[st].active : statusStyles[st].idle;
+                    return `<button type="button" onclick="setStudentStatus('${student.id}', '${st}')" class="flex-1 sm:flex-none sm:w-16 py-2.5 sm:py-2 rounded-xl border text-sm font-bold transition active:scale-95 ${cls}">${st}</button>`;
+                }).join('');
+
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:px-5 sm:py-3 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-slate-300">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm flex items-center justify-center shrink-0">
+                                ${student.no}
+                            </span>
+                            <div class="min-w-0">
+                                <div class="font-bold text-slate-900 text-base truncate">${getFullName(student)}</div>
+                                <div class="text-xs text-slate-400 font-medium">รหัส ${student.id}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                            ${buttonsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderDailyStatsView() {
+            const dateKey = state.selectedDate;
+            const dayRecords = state.attendanceData[dateKey] || {};
+
+            document.getElementById('dailyStatDate').value = dateKey;
+            document.getElementById('dailyStatThaiDate').textContent = formatThaiDate(dateKey);
+
+            let present = 0, late = 0, leave = 0, absent = 0;
+            STUDENTS.forEach(s => {
+                const st = dayRecords[s.id];
+                if (st === 'มา') present++;
+                else if (st === 'สาย') late++;
+                else if (st === 'ลา') leave++;
+                else if (st === 'ขาด') absent++;
+            });
+
+            const total = STUDENTS.length;
+            const checked = present + late + leave + absent;
+            const pct = (n) => total > 0 ? ((n / total) * 100).toFixed(1) + '%' : '0%';
+
+            document.getElementById('dailyKpiPresent').textContent = present;
+            document.getElementById('dailyKpiLate').textContent = late;
+            document.getElementById('dailyKpiLeave').textContent = leave;
+            document.getElementById('dailyKpiAbsent').textContent = absent;
+
+            document.getElementById('dailyPctPresent').textContent = pct(present);
+            document.getElementById('dailyPctLate').textContent = pct(late);
+            document.getElementById('dailyPctLeave').textContent = pct(leave);
+            document.getElementById('dailyPctAbsent').textContent = pct(absent);
+
+            document.getElementById('dailyCheckedTotal').textContent = `เช็คแล้ว ${checked} / ${total} คน`;
+            document.getElementById('barPresent').style.width = `${(present / total) * 100}%`;
+            document.getElementById('barLate').style.width = `${(late / total) * 100}%`;
+            document.getElementById('barLeave').style.width = `${(leave / total) * 100}%`;
+            document.getElementById('barAbsent').style.width = `${(absent / total) * 100}%`;
+
+            // Render Grouped Lists by Status (มา / สาย / ลา / ขาด)
+            const groupConfigs = [
+                { key: 'มา',  label: 'มาเข้าแถว',  headerCls: 'from-emerald-500 to-teal-500', borderCls: 'border-emerald-200', badgeCls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                { key: 'สาย', label: 'มาสาย',      headerCls: 'from-amber-400 to-orange-500', borderCls: 'border-amber-200',   badgeCls: 'bg-amber-50 text-amber-700 border-amber-200' },
+                { key: 'ลา',  label: 'ลา',         headerCls: 'from-sky-500 to-blue-500',     borderCls: 'border-sky-200',     badgeCls: 'bg-sky-50 text-sky-700 border-sky-200' },
+                { key: 'ขาด', label: 'ขาด',        headerCls: 'from-rose-500 to-pink-500',    borderCls: 'border-rose-200',    badgeCls: 'bg-rose-50 text-rose-700 border-rose-200' }
+            ];
+
+            const groupedContainer = document.getElementById('dailyGroupedLists');
+            groupedContainer.innerHTML = groupConfigs.map(cfg => {
+                const list = STUDENTS.filter(s => dayRecords[s.id] === cfg.key);
+                const listHtml = list.length > 0
+                    ? `<div class="flex flex-wrap gap-1.5">
+                        ${list.map(s => `
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs sm:text-sm font-semibold ${cfg.badgeCls}">
+                                <span class="font-bold opacity-75">${s.no}.</span>
+                                <span>${getFullName(s)}</span>
+                            </span>
+                        `).join('')}
+                       </div>`
+                    : `<div class="text-sm text-slate-400 py-2 text-center">ไม่มีรายชื่อ</div>`;
+
+                return `
+                    <div class="bg-white/95 rounded-3xl border ${cfg.borderCls} shadow-sm overflow-hidden flex flex-col">
+                        <div class="bg-gradient-to-r ${cfg.headerCls} px-4 py-2.5 text-white flex items-center justify-between">
+                            <span class="font-bold text-sm sm:text-base">${cfg.label}</span>
+                            <span class="px-2.5 py-0.5 rounded-full bg-white/25 text-xs font-bold">${list.length} คน</span>
+                        </div>
+                        <div class="p-3.5 flex-1">
+                            ${listHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Table rows
+            const tbody = document.getElementById('dailyStatTableBody');
+            const filtered = STUDENTS.filter(s => {
+                if (state.dailyFilter === 'all') return true;
+                return dayRecords[s.id] === state.dailyFilter;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">ไม่มีรายการในสถานะนี้</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => {
+                const st = dayRecords[s.id] || '';
+                const badge = getStatusBadgeHtml(st);
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-3 sm:px-4 text-center font-semibold text-slate-600">${s.no}</td>
+                        <td class="py-3 px-3 sm:px-4 text-slate-500 font-mono text-xs sm:text-sm">${s.id}</td>
+                        <td class="py-3 px-3 sm:px-4 font-semibold text-slate-800">${getFullName(s)}</td>
+                        <td class="py-3 px-3 sm:px-4 text-center">${badge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadgeHtml(status) {
+            if (status === 'มา')  return `<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">มา</span>`;
+            if (status === 'สาย') return `<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">สาย</span>`;
+            if (status === 'ลา')  return `<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-700">ลา</span>`;
+            if (status === 'ขาด') return `<span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">ขาด</span>`;
+            return `<span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-400">-</span>`;
+        }
+
+        function getMonthlyStatsData(year, month) {
+            const prefix = month === 0 ? '' : `${year}-${String(month).padStart(2, '0')}-`;
+            const matchingDates = Object.keys(state.attendanceData)
+                .filter(d => (month === 0 || d.startsWith(prefix)) && Object.keys(state.attendanceData[d] || {}).length > 0)
+                .sort();
+
+            const studentStats = STUDENTS.map(s => {
+                let present = 0, late = 0, leave = 0, absent = 0;
+                matchingDates.forEach(d => {
+                    const st = state.attendanceData[d]?.[s.id];
+                    if (st === 'มา') present++;
+                    else if (st === 'สาย') late++;
+                    else if (st === 'ลา') leave++;
+                    else if (st === 'ขาด') absent++;
+                });
+                const totalRecorded = present + late + leave + absent;
+                // มา + สาย นับว่ามาโรงเรียน (หรือคิดเฉพาะ มา+สาย / วันทั้งหมดที่บันทึก)
+                const rate = totalRecorded > 0 ? (((present + late) / totalRecorded) * 100) : 0;
+                return { ...s, present, late, leave, absent, totalRecorded, rate };
+            });
+
+            const totals = studentStats.reduce((acc, cur) => {
+                acc.present += cur.present;
+                acc.late += cur.late;
+                acc.leave += cur.leave;
+                acc.absent += cur.absent;
+                return acc;
+            }, { present: 0, late: 0, leave: 0, absent: 0 });
+
+            const grandTotal = totals.present + totals.late + totals.leave + totals.absent;
+            const avgRate = grandTotal > 0 ? (((totals.present + totals.late) / grandTotal) * 100) : 0;
+
+            return { matchingDates, studentStats, totals, avgRate };
+        }
+
+        function renderMonthlyStatsView() {
+            const year = state.selectedYear;
+            const month = state.selectedMonth;
+            const { matchingDates, studentStats, totals, avgRate } = getMonthlyStatsData(year, month);
+
+            const periodTitle = month === 0
+                ? 'สรุปรายบุคคลทั้งหมด (ทุกวันที่มีข้อมูล)'
+                : `สรุปรายบุคคล เดือน${THAI_MONTHS[month - 1]} ${year + 543}`;
+            document.getElementById('monthlyTableTitle').textContent = periodTitle;
+            document.getElementById('monthTotalDays').textContent = `${matchingDates.length} วัน`;
+            document.getElementById('monthAvgRate').textContent = `${avgRate.toFixed(1)}%`;
+            document.getElementById('monthTotalPresent').textContent = totals.present;
+            document.getElementById('monthTotalLate').textContent = totals.late;
+            document.getElementById('monthTotalLeave').textContent = totals.leave;
+            document.getElementById('monthTotalAbsent').textContent = totals.absent;
+
+            const q = state.monthlySearch.trim().toLowerCase();
+            const filtered = studentStats.filter(s => {
+                if (!q) return true;
+                return String(s.no).includes(q) || s.id.includes(q) || getFullName(s).toLowerCase().includes(q);
+            });
+
+            const tbody = document.getElementById('monthlyStatTableBody');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">ไม่พบรายชื่อนักเรียน</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => {
+                const rateColor = s.totalRecorded === 0 ? 'text-slate-400' :
+                                  s.rate >= 80 ? 'text-emerald-700 font-bold' :
+                                  s.rate >= 60 ? 'text-amber-700 font-bold' : 'text-rose-700 font-bold';
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-3 px-2.5 sm:px-4 text-center font-semibold text-slate-600">${s.no}</td>
+                        <td class="py-3 px-2.5 sm:px-4 hidden sm:table-cell font-mono text-xs text-slate-500">${s.id}</td>
+                        <td class="py-3 px-2.5 sm:px-4 font-semibold text-slate-800">${getFullName(s)}</td>
+                        <td class="py-3 px-2 text-center font-semibold text-emerald-700">${s.present}</td>
+                        <td class="py-3 px-2 text-center font-semibold text-amber-600">${s.late}</td>
+                        <td class="py-3 px-2 text-center font-semibold text-sky-600">${s.leave}</td>
+                        <td class="py-3 px-2 text-center font-semibold text-rose-600">${s.absent}</td>
+                        <td class="py-3 px-2.5 sm:px-4 text-center ${rateColor}">${s.totalRecorded > 0 ? s.rate.toFixed(1) + '%' : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        /**
+         * =====================================================================
+         * WORD EXPORT (.doc)
+         * =====================================================================
+         */
+        function downloadWordFile(filename, htmlBody) {
+            const fullHtml = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office"
+                      xmlns:w="urn:schemas-microsoft-com:office:word"
+                      xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    <title>${filename}</title>
+                    <style>
+                        @page { size: A4; margin: 1.5cm 1.5cm 1.5cm 1.5cm; }
+                        body { font-family: 'TH Sarabun New', 'Sarabun', sans-serif; font-size: 16pt; color: #000; line-height: 1.3; }
+                        h1 { font-size: 20pt; text-align: center; margin: 0 0 4pt 0; font-weight: bold; }
+                        h2 { font-size: 16pt; text-align: center; margin: 0 0 12pt 0; font-weight: normal; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 8pt; font-size: 14pt; }
+                        th, td { border: 1px solid #000; padding: 3pt 6pt; }
+                        th { background-color: #f1f5f9; font-weight: bold; text-align: center; }
+                        .center { text-align: center; }
+                        .summary-box { margin-bottom: 10pt; font-size: 15pt; }
+                        .sign-area { margin-top: 28pt; width: 100%; border: none; }
+                        .sign-area td { border: none; text-align: center; padding: 4pt; }
+                    </style>
+                </head>
+                <body>
+                    ${htmlBody}
+                </body>
+                </html>
+            `;
+            const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast(`ส่งออกไฟล์ ${filename} สำเร็จ`);
+        }
+
+        function exportDailyWord() {
+            const dateKey = state.selectedDate;
+            const dayRecords = state.attendanceData[dateKey] || {};
+            let present = 0, late = 0, leave = 0, absent = 0;
+
+            const rows = STUDENTS.map(s => {
+                const st = dayRecords[s.id] || '-';
+                if (st === 'มา') present++;
+                else if (st === 'สาย') late++;
+                else if (st === 'ลา') leave++;
+                else if (st === 'ขาด') absent++;
+                return `
+                    <tr>
+                        <td class="center">${s.no}</td>
+                        <td class="center">${s.id}</td>
+                        <td>${getFullName(s)}</td>
+                        <td class="center">${st}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const htmlBody = `
+                <h1>รายงานการเช็คชื่อเข้าแถวประจำวัน ชั้นมัธยมศึกษาปีที่ 5/8</h1>
+                <h2>${formatThaiDate(dateKey)}</h2>
+                <div class="summary-box">
+                    <strong>สรุปยอดนักเรียนทั้งหมด ${STUDENTS.length} คน:</strong>
+                    มา ${present} คน &nbsp;|&nbsp; สาย ${late} คน &nbsp;|&nbsp; ลา ${leave} คน &nbsp;|&nbsp; ขาด ${absent} คน
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">เลขที่</th>
+                            <th style="width:18%;">เลขประจำตัว</th>
+                            <th style="width:52%;">ชื่อ-สกุล</th>
+                            <th style="width:20%;">สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <table class="sign-area">
+                    <tr>
+                        <td style="width:50%;"></td>
+                        <td style="width:50%;">
+                            ลงชื่อ.......................................................<br>
+                            (.......................................................)<br>
+                            ครูที่ปรึกษาชั้น ม.5/8
+                        </td>
+                    </tr>
+                </table>
+            `;
+            downloadWordFile(`เช็คชื่อเข้าแถว_ม5-8_${dateKey}.doc`, htmlBody);
+        }
+
+        function exportMonthlyWord() {
+            const year = state.selectedYear;
+            const month = state.selectedMonth;
+            const isAll = month === 0;
+            const monthName = isAll ? 'ทั้งหมด' : THAI_MONTHS[month - 1];
+            const beYear = year + 543;
+            const { matchingDates, studentStats, totals, avgRate } = getMonthlyStatsData(year, month);
+
+            const rows = studentStats.map(s => `
+                <tr>
+                    <td class="center">${s.no}</td>
+                    <td class="center">${s.id}</td>
+                    <td>${getFullName(s)}</td>
+                    <td class="center">${s.present}</td>
+                    <td class="center">${s.late}</td>
+                    <td class="center">${s.leave}</td>
+                    <td class="center">${s.absent}</td>
+                    <td class="center">${s.totalRecorded > 0 ? s.rate.toFixed(1) + '%' : '-'}</td>
+                </tr>
+            `).join('');
+
+            const subTitle = isAll
+                ? `ข้อมูลสะสมทั้งหมด (จำนวนวันที่บันทึก ${matchingDates.length} วัน)`
+                : `ประจำเดือน${monthName} พ.ศ. ${beYear} (จำนวนวันที่บันทึก ${matchingDates.length} วัน)`;
+
+            const htmlBody = `
+                <h1>สรุปสถิติการเช็คชื่อเข้าแถว ชั้นมัธยมศึกษาปีที่ 5/8</h1>
+                <h2>${subTitle}</h2>
+                <div class="summary-box">
+                    <strong>ภาพรวม:</strong>
+                    มา ${totals.present} ครั้ง &nbsp;|&nbsp; สาย ${totals.late} ครั้ง &nbsp;|&nbsp; ลา ${totals.leave} ครั้ง &nbsp;|&nbsp; ขาด ${totals.absent} ครั้ง &nbsp;|&nbsp; เฉลี่ยการเข้าแถว ${avgRate.toFixed(1)}%
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:8%;">เลขที่</th>
+                            <th style="width:14%;">รหัส</th>
+                            <th style="width:38%;">ชื่อ-สกุล</th>
+                            <th style="width:8%;">มา</th>
+                            <th style="width:8%;">สาย</th>
+                            <th style="width:8%;">ลา</th>
+                            <th style="width:8%;">ขาด</th>
+                            <th style="width:8%;">ร้อยละ</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <table class="sign-area">
+                    <tr>
+                        <td style="width:50%;"></td>
+                        <td style="width:50%;">
+                            ลงชื่อ.......................................................<br>
+                            (.......................................................)<br>
+                            ครูที่ปรึกษาชั้น ม.5/8
+                        </td>
+                    </tr>
+                </table>
+            `;
+            const fileName = isAll
+                ? `สถิติเข้าแถวทั้งหมด_ม5-8.doc`
+                : `สถิติเข้าแถว_ม5-8_${monthName}_${beYear}.doc`;
+            downloadWordFile(fileName, htmlBody);
+        }
+
+        /**
+         * =====================================================================
+         * GOOGLE APPS SCRIPT SNIPPET (FOR CLIPBOARD COPY IN SETTINGS)
+         * =====================================================================
+         */
+        function getAppsScriptCode() {
+            return `const SHEET_ID = '${SHEET_ID}';
+const SHEET_NAME = 'Attendance';
+
+function getSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(['Date', 'StudentID', 'Status', 'UpdatedAt']);
+  }
+  return sheet;
+}
+
+function getAttendanceData() {
+  const sheet = getSheet();
+  const rows = sheet.getDataRange().getValues();
+  const data = {};
+  for (let i = 1; i < rows.length; i++) {
+    const rawDate = rows[i][0];
+    const studentId = String(rows[i][1]).trim();
+    const status = String(rows[i][2]).trim();
+    if (!rawDate || !studentId || !status) continue;
+    const dateKey = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+      : String(rawDate).trim();
+    if (!data[dateKey]) data[dateKey] = {};
+    data[dateKey][studentId] = status;
+  }
+  return data;
+}
+
+function saveAttendanceDay(dateKey, records) {
+  const sheet = getSheet();
+  const rows = sheet.getDataRange().getValues();
+  const kept = [rows[0] || ['Date', 'StudentID', 'Status', 'UpdatedAt']];
+  for (let i = 1; i < rows.length; i++) {
+    const rawDate = rows[i][0];
+    const dStr = rawDate instanceof Date
+      ? Utilities.formatDate(rawDate, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+      : String(rawDate).trim();
+    if (dStr !== dateKey) kept.push(rows[i]);
+  }
+  const now = new Date();
+  Object.keys(records || {}).forEach(id => {
+    if (records[id]) kept.push([dateKey, String(id), String(records[id]), now]);
+  });
+  sheet.clearContents();
+  if (kept.length > 0) {
+    sheet.getRange(1, 1, kept.length, 4).setValues(kept);
+  }
+  return { status: 'ok' };
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({ status: 'ok', data: getAttendanceData() }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  if (body.action === 'saveDay') {
+    saveAttendanceDay(body.date, body.records);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+        }
+
+        function copyTextFallback(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+
+        /**
+         * =====================================================================
+         * EVENT LISTENERS & INITIALIZATION
+         * =====================================================================
+         */
+        function switchTab(tabName) {
+            state.activeTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tabName;
+                btn.className = isActive
+                    ? 'tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-sm'
+                    : 'tab-btn py-2 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition text-slate-600 hover:text-indigo-700';
+            });
+
+            document.getElementById('tab-home').classList.toggle('hidden', tabName !== 'home');
+            document.getElementById('tab-checkin').classList.toggle('hidden', tabName !== 'checkin');
+            document.getElementById('tab-daily').classList.toggle('hidden', tabName !== 'daily');
+            document.getElementById('tab-monthly').classList.toggle('hidden', tabName !== 'monthly');
+            document.getElementById('mobileSaveBar').classList.toggle('hidden', tabName !== 'checkin');
+
+            if (tabName === 'home') renderHomeView();
+            if (tabName === 'checkin') renderCheckinView();
+            if (tabName === 'daily') renderDailyStatsView();
+            if (tabName === 'monthly') renderMonthlyStatsView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function initSelectors() {
+            const monthSelect = document.getElementById('monthlySelectMonth');
+            const monthOptions = [`<option value="0" ${state.selectedMonth === 0 ? 'selected' : ''}>ทั้งหมด (ทุกเดือน)</option>`]
+                .concat(THAI_MONTHS.map((m, idx) =>
+                    `<option value="${idx + 1}" ${idx + 1 === state.selectedMonth ? 'selected' : ''}>เดือน${m}</option>`
+                ));
+            monthSelect.innerHTML = monthOptions.join('');
+
+            const yearSelect = document.getElementById('monthlySelectYear');
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let y = currentYear - 2; y <= currentYear + 2; y++) years.push(y);
+            yearSelect.innerHTML = years.map(y =>
+                `<option value="${y}" ${y === state.selectedYear ? 'selected' : ''}>พ.ศ. ${y + 543}</option>`
+            ).join('');
+            yearSelect.classList.toggle('hidden', state.selectedMonth === 0);
+        }
+
+        function bindEvents() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // Date navigation (Tab 1)
+            document.getElementById('checkinDate').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    state.selectedDate = e.target.value;
+                    renderAll();
+                }
+            });
+            document.getElementById('btnPrevDay').addEventListener('click', () => {
+                state.selectedDate = shiftDate(state.selectedDate, -1);
+                renderAll();
+            });
+            document.getElementById('btnNextDay').addEventListener('click', () => {
+                state.selectedDate = shiftDate(state.selectedDate, 1);
+                renderAll();
+            });
+            document.getElementById('btnToday').addEventListener('click', () => {
+                state.selectedDate = getTodayISO();
+                renderAll();
+            });
+
+            // Search & Bulk Actions
+            document.getElementById('checkinSearch').addEventListener('input', (e) => {
+                state.checkinSearch = e.target.value;
+                renderCheckinView();
+            });
+            document.getElementById('btnMarkAllPresent').addEventListener('click', () => {
+                if (!state.attendanceData[state.selectedDate]) {
+                    state.attendanceData[state.selectedDate] = {};
+                }
+                STUDENTS.forEach(s => {
+                    state.attendanceData[state.selectedDate][s.id] = 'มา';
+                });
+                saveLocalCache();
+                renderCheckinView();
+            });
+            document.getElementById('btnClearDay').addEventListener('click', () => {
+                state.attendanceData[state.selectedDate] = {};
+                saveLocalCache();
+                renderCheckinView();
+            });
+
+            // Save Buttons
+            document.getElementById('btnSaveDesktop').addEventListener('click', () => saveDayToCloud(state.selectedDate));
+            document.getElementById('btnSaveMobile').addEventListener('click', () => saveDayToCloud(state.selectedDate));
+
+            // Daily Stats Tab
+            document.getElementById('dailyStatDate').addEventListener('change', (e) => {
+                if (e.target.value) {
+                    state.selectedDate = e.target.value;
+                    renderAll();
+                }
+            });
+            document.querySelectorAll('.daily-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.dailyFilter = btn.dataset.dailyFilter;
+                    document.querySelectorAll('.daily-filter-btn').forEach(b => {
+                        const active = b.dataset.dailyFilter === state.dailyFilter;
+                        b.className = active
+                            ? 'daily-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-white'
+                            : 'daily-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200';
+                    });
+                    renderDailyStatsView();
+                });
+            });
+            document.getElementById('btnExportDailyWord').addEventListener('click', exportDailyWord);
+
+            // Monthly Stats Tab
+            document.getElementById('monthlySelectMonth').addEventListener('change', (e) => {
+                state.selectedMonth = Number(e.target.value);
+                document.getElementById('monthlySelectYear').classList.toggle('hidden', state.selectedMonth === 0);
+                renderMonthlyStatsView();
+            });
+            document.getElementById('monthlySelectYear').addEventListener('change', (e) => {
+                state.selectedYear = Number(e.target.value);
+                renderMonthlyStatsView();
+            });
+            document.getElementById('monthlySearch').addEventListener('input', (e) => {
+                state.monthlySearch = e.target.value;
+                renderMonthlyStatsView();
+            });
+            document.getElementById('btnExportMonthlyWord').addEventListener('click', exportMonthlyWord);
+
+            // Refresh & Settings Modal
+            document.getElementById('btnRefresh').addEventListener('click', fetchAllDataFromCloud);
+            document.getElementById('btnSettings').addEventListener('click', () => {
+                document.getElementById('inputSheetId').value = SHEET_ID;
+                document.getElementById('inputGasUrl').value = state.gasUrl;
+                document.getElementById('settingsModal').classList.remove('hidden');
+            });
+            document.getElementById('btnCloseSettings').addEventListener('click', () => {
+                document.getElementById('settingsModal').classList.add('hidden');
+            });
+            document.getElementById('settingsModal').addEventListener('click', (e) => {
+                if (e.target.id === 'settingsModal') {
+                    document.getElementById('settingsModal').classList.add('hidden');
+                }
+            });
+            document.getElementById('btnSaveSettings').addEventListener('click', () => {
+                const url = document.getElementById('inputGasUrl').value.trim();
+                state.gasUrl = url;
+                localStorage.setItem(STORAGE_KEY_GAS_URL, url);
+                document.getElementById('settingsModal').classList.add('hidden');
+                fetchAllDataFromCloud();
+                showToast('บันทึกการตั้งค่าแล้ว');
+            });
+            document.getElementById('btnCopyGasCode').addEventListener('click', () => {
+                copyTextFallback(getAppsScriptCode());
+                showToast('คัดลอกโค้ด Apps Script แล้ว');
+            });
+        }
+
+        // Boot Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalCache();
+            initSelectors();
+            bindEvents();
+            switchTab('home');
+            renderAll();
+            fetchAllDataFromCloud();
+        });
+    </script>
+</body>
+</html>
